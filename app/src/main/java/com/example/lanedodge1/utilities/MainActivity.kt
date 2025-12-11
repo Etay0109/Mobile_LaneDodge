@@ -153,6 +153,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startTimer() {
+        if (::timerJob.isInitialized && timerJob.isActive) {
+            return
+        }
         timerJob = lifecycleScope.launch {
             while (true) {
                 gameManager.tick()
@@ -169,8 +172,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopTimer() {
-        timerJob.cancel()
+        if (::timerJob.isInitialized && timerJob.isActive) {
+            timerJob.cancel()
+        }
     }
+
+
+    override fun onPause() {    // Pause the app when we are not using it
+        super.onPause()
+        stopTimer()
+    }
+
+    override fun onResume() {   //resume the app when we are back
+        super.onResume()
+        if (!gameManager.isGameOver) {
+            startTimer()
+        }
+    }
+
 }
 
 
